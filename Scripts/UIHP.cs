@@ -9,7 +9,7 @@ public class UIHP : MonoBehaviour
     [SerializeField] private Text _text;
     [SerializeField] private float _speed;
 
-    private bool _isCoroutineActive = false;
+    private Coroutine _updateBar;
 
     private void Start()
     {
@@ -28,22 +28,20 @@ public class UIHP : MonoBehaviour
 
     private void SetValue(int newHPValue)
     {
-        StartCoroutine(UpdateBarValue(newHPValue)); 
+        if (_updateBar != null)
+            StopCoroutine(_updateBar);
+
+        _updateBar = StartCoroutine(UpdateBarValue(newHPValue)); 
     }
 
     private IEnumerator UpdateBarValue(float targetValue)
     {
-        if (_isCoroutineActive == false)
+        while (_slider.value != targetValue)
         {
-            while (_slider.value != targetValue)
-            {
-                _isCoroutineActive = true;
-                var value = Mathf.MoveTowards(_slider.value, targetValue, _speed * Time.deltaTime);
-                _slider.value = value;
-                _text.text = Mathf.Round(value).ToString();
-                yield return null;
-            }
-            _isCoroutineActive = false;
+            var value = Mathf.MoveTowards(_slider.value, targetValue, _speed * Time.deltaTime);
+            _slider.value = value;
+            _text.text = Mathf.Round(value).ToString();
+            yield return null;
         }
     }
 }
