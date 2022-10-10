@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
-[RequireComponent(typeof(HP))]
 public class UIHP : MonoBehaviour
 {
     [SerializeField] private HP _hp;
@@ -10,11 +9,10 @@ public class UIHP : MonoBehaviour
     [SerializeField] private Text _text;
     [SerializeField] private float _speed;
 
-    private float _targetValue;
+    private bool _isCoroutineActive = false;
 
     private void Start()
     {
-        _hp = GetComponent<HP>();
         _slider.maxValue = _hp.MaxPoints;
     }
 
@@ -30,18 +28,22 @@ public class UIHP : MonoBehaviour
 
     private void SetValue(int newHPValue)
     {
-        _targetValue = newHPValue;
-        StartCoroutine(UpdateBarValue()); 
+        StartCoroutine(UpdateBarValue(newHPValue)); 
     }
 
-    private IEnumerator UpdateBarValue()
+    private IEnumerator UpdateBarValue(float targetValue)
     {
-        while (_slider.value != _targetValue)
+        if (_isCoroutineActive == false)
         {
-            var value = Mathf.MoveTowards(_slider.value, _targetValue, _speed * Time.deltaTime);
-            _slider.value = value; 
-            _text.text = Mathf.Round(value).ToString();
-            yield return null;
+            while (_slider.value != targetValue)
+            {
+                _isCoroutineActive = true;
+                var value = Mathf.MoveTowards(_slider.value, targetValue, _speed * Time.deltaTime);
+                _slider.value = value;
+                _text.text = Mathf.Round(value).ToString();
+                yield return null;
+            }
+            _isCoroutineActive = false;
         }
     }
 }
